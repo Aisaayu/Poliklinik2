@@ -176,8 +176,7 @@ $conn->close();
         <h2><i class="fas fa-hospital"></i> Poli Klinik</h2>
         <a href="dashboard.php"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
         <a href="pendaftaran_pasien_baru.php"><i class="fas fa-user-plus"></i> Pendaftaran Pasien Baru</a>
-        <a href="pendaftaran_poli.php"><i class="fas fa-clinic-medical"></i> Pendaftaran Poli</a>
-        <a href="profil_pasien.php"><i class="fas fa-user"></i> Profil Pasien</a>
+        <a href="../pasien/pendaftaran_poli.php"><i class="fas fa-clinic-medical"></i> Pendaftaran Poli</a>
         <a href="logout_pasien.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
     </div>
 

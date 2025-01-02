@@ -2,9 +2,10 @@
 session_start(); // Memulai sesi
 
 // Periksa apakah pengguna sudah login dan memiliki peran "dokter"
-if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'dokter') {
+if (!isset($_SESSION['user_id'])) {
+    echo "Sesi tidak tersedia. Silakan login ulang.";
     header("Location: login_dokter.php");
-    exit;
+    exit();
 }
 
 include('../includes/db.php');
@@ -13,6 +14,15 @@ include('../includes/db.php');
 $dokter_id = $_SESSION['user_id'];
 $query = "SELECT * FROM dokter3 WHERE id_dokter = '$dokter_id'";
 $result = mysqli_query($conn, $query);
+$nama_dokter = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : 'Nama tidak tersedia';
+$gelar_dokter = isset($_SESSION['user_title']) ? $_SESSION['user_title'] : 'Gelar tidak tersedia';
+$id_poli = isset($_SESSION['user_poli']) ? $_SESSION['user_poli'] : 'Poli tidak tersedia';
+
+if (!$result || mysqli_num_rows($result) === 0) {
+    echo "Data dokter tidak ditemukan. Silakan periksa sesi login.";
+    exit();
+}
+
 $dokter = mysqli_fetch_assoc($result);
 
 // Ambil daftar pasien yang dijadwalkan untuk hari ini
@@ -23,6 +33,13 @@ $jadwal_query = "SELECT p.nama AS nama_pasien, j.waktu, p.no_hp, p.alamat
                  WHERE j.dokter_id = '$dokter_id' AND j.tanggal = '$tanggal_hari_ini'";
 $jadwal_result = mysqli_query($conn, $jadwal_query);
 
+$query = "SELECT nama_poli FROM poli1 WHERE id_poli = ?";
+$stmt = $conn->prepare($query);
+$stmt->bind_param("i", $id_poli);
+$stmt->execute();
+$poli_result = $stmt->get_result();
+$poli = $poli_result->fetch_assoc();
+$nama_poli = $poli ? $poli['nama_poli'] : 'Poli tidak tersedia';
 ?>
 
 <!DOCTYPE html>
@@ -162,12 +179,10 @@ $jadwal_result = mysqli_query($conn, $jadwal_query);
     <div class="sidebar" id="sidebar">
         <h2><i class="fas fa-hospital"></i> Poli Klinik</h2>
         <a href="dashboard_dokter.php"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
-        <a href="edit_dokter.php"><i class="fas fa-user-md"></i> Profile</a>
         <a href="jadwal_periksa.php"><i class="fas fa-calendar-check"></i> Jadwal Periksa</a>
         <a href="periksa_pasien.php"><i class="fas fa-user-injured"></i> Periksa Pasien</a>
-        <a href="biaya.php"><i class="fas fa-file-invoice-dollar"></i> Biaya</a>
-        <a href="catatan_obat.php"><i class="fas fa-notes-medical"></i> Catatan Obat</a>
         <a href="riwayat_pasien.php"><i class="fas fa-history"></i> Riwayat Pasien</a>
+        <a href="../dokter/update_dokter.php"><i class="fas fa-user-md"></i> Profile</a>
         <a href="logout_dokter.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
     </div>
 
@@ -191,10 +206,11 @@ $jadwal_result = mysqli_query($conn, $jadwal_query);
                 <div class="card">
                     <div class="card-header">Informasi Dokter</div>
                     <div class="card-body">
-                        <p><strong>Nama:</strong> <?php echo htmlspecialchars($dokter['nama_dokter']); ?></p>
-                        <p><strong>Spesialis:</strong> <?php echo htmlspecialchars($dokter['spesialis']); ?></p>
-                        <p><strong>No. HP:</strong> <?php echo htmlspecialchars($dokter['no_hp']); ?></p>
-                        <p><strong>Email:</strong> <?php echo htmlspecialchars($dokter['email']); ?></p>
+                    <h6><strong>Nama:</strong> <?php echo htmlspecialchars($nama_dokter); ?></h6>
+                    <p><strong>Gelar:</strong> <?php echo htmlspecialchars($gelar_dokter); ?></p>
+                    <p><strong>Poli:</strong><?php echo htmlspecialchars($nama_poli); ?></p>
+                    <p><strong>No. HP:</strong> <?php echo htmlspecialchars($dokter['no_hp']); ?></p>
+                    <p><strong>Email:</strong> <?php echo htmlspecialchars($dokter['email']); ?></p>
                     </div>
                 </div>
 
@@ -228,18 +244,15 @@ $jadwal_result = mysqli_query($conn, $jadwal_query);
                         <?php endif; ?>
                     </div>
                 </div>
-
- <!-- Aksi Lainnya Card -->
+                <!-- Aksi Lainnya Card -->
 <div class="card card-aksi-lainnya">
     <div class="card-header">Aksi Lainnya</div>
     <div class="card-body">
         <a href="input_rekam_medis.php" class="btn btn-primary btn-block">Input Rekam Medis</a>
-        <a href="jadwal_dokter.php" class="btn btn-success btn-block">Lihat Jadwal Saya</a>
-        <a href="ubah_profil.php" class="btn btn-warning btn-block">Ubah Profil</a>
+        <a href="jadwal_periksa.php" class="btn btn-success btn-block">Lihat Jadwal Saya</a>
+        <a href="../dokter/update_dokter.php" class="btn btn-warning btn-block">Ubah Profil</a>
     </div>
 </div>
-
-
             </div>
         </div>
     </div>

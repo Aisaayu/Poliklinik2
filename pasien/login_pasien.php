@@ -1,17 +1,32 @@
 <?php
 session_start();
 
+// Jika pengguna sudah login, arahkan ke dashboard
+if (isset($_SESSION['user_id'])) {
+    header("Location: ../pasien/dashboard.php");
+    exit();
+}
+
 // Menghubungkan ke database
 include('../includes/db.php');
 
 // Menangani proses login
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $username = mysqli_real_escape_string($conn, $_POST['username']);
-    $password = mysqli_real_escape_string($conn, $_POST['password']);
+    $username = $_POST['username'];
+    $password = $_POST['password'];
 
-    // Query untuk mengecek apakah username dan password ada dalam database
-    $query = "SELECT * FROM users WHERE username = '$username' AND role = 'pasien'";
-    $result = mysqli_query($conn, $query);
+    // Query untuk mengecek apakah username dan password ada dalam database dengan prepared statement
+    $query = "SELECT * FROM users WHERE username = ? AND role = 'pasien'";
+    $stmt = mysqli_prepare($conn, $query);
+    
+    // Bind parameter untuk query
+    mysqli_stmt_bind_param($stmt, "s", $username);
+    
+    // Eksekusi query
+    mysqli_stmt_execute($stmt);
+    
+    // Ambil hasilnya
+    $result = mysqli_stmt_get_result($stmt);
 
     if (mysqli_num_rows($result) > 0) {
         // Jika ditemukan, ambil data pengguna
@@ -24,6 +39,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $_SESSION['username'] = $row['username'];
             $_SESSION['user_role'] = $row['role'];
 
+            // Regenerasi session ID untuk keamanan
+            session_regenerate_id(true);
+
             // Redirect ke dashboard pasien
             header("Location: ../pasien/dashboard.php");
             exit();
@@ -34,8 +52,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $error = "Username tidak ditemukan!";
     }
 }
-?>
 
+// Pastikan koneksi ditutup
+mysqli_close($conn);
+?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -75,8 +95,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             
             <button type="submit" class="w-full bg-blue-500 text-white p-3 rounded-lg font-semibold hover:bg-blue-600">Login</button>
         </form>
-
-
 
         <div class="mt-4 text-center">
             <a href="register.php" class="text-blue-500 hover:text-blue-700 font-semibold">Belum punya akun? Daftar di sini</a>

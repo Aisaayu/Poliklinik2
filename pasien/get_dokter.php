@@ -1,23 +1,24 @@
 <?php
 include('../includes/db.php');
 
-// Periksa apakah ada parameter poli_id
 if (isset($_GET['poli_id'])) {
-    $poli_id = $_GET['poli_id'];
-
-    // Ambil dokter berdasarkan poli
-    $dokter_query = "SELECT * FROM dokter3 WHERE id_poli = ?";
-    $stmt = mysqli_prepare($conn, $dokter_query);
-    mysqli_stmt_bind_param($stmt, 'i', $poli_id);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
-
+    $poli_id = intval($_GET['poli_id']);
+    $query = "SELECT id_dokter, nama_dokter FROM dokter3 WHERE id_poli = ?";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("i", $poli_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
     $dokter_list = [];
-    while ($row = mysqli_fetch_assoc($result)) {
+
+    while ($row = $result->fetch_assoc()) {
         $dokter_list[] = $row;
     }
 
-    // Kirimkan response dalam format JSON
     echo json_encode($dokter_list);
+} else {
+    echo json_encode([]);
 }
+error_log("Poli ID: " . $poli_id);
+error_log(print_r($dokter_list, true));
+
 ?>

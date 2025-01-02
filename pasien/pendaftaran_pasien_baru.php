@@ -14,18 +14,21 @@ $username = $_SESSION['username'];
 $poli_query = "SELECT * FROM poli1";
 $poli_result = mysqli_query($conn, $poli_query);
 
-// Ambil data Dokter berdasarkan Poli
-$dokter_query = "SELECT * FROM dokter3 WHERE id_poli = ?"; // Pastikan dokter memiliki field id_poli
+// Check for database errors
+if (!$poli_result) {
+    die("Error retrieving poli data: " . mysqli_error($conn));
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"> <!-- Tambahkan ini di bagian <head> -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <title>Pendaftaran Pasien Baru</title>
     <style>
-        body {
+ body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
@@ -132,9 +135,7 @@ $dokter_query = "SELECT * FROM dokter3 WHERE id_poli = ?"; // Pastikan dokter me
         }
         .form-container button:hover {
             background-color: #5a9bd3;
-        }
-
-    </style>
+        }    </style>
 </head>
 <body>
     <!-- Sidebar -->
@@ -142,8 +143,7 @@ $dokter_query = "SELECT * FROM dokter3 WHERE id_poli = ?"; // Pastikan dokter me
         <h2><i class="fas fa-hospital"></i> Poli Klinik</h2>
         <a href="dashboard.php"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
         <a href="pendaftaran_pasien_baru.php"><i class="fas fa-user-plus"></i> Pendaftaran Pasien Baru</a>
-        <a href="pendaftaran_poli.php"><i class="fas fa-clinic-medical"></i> Pendaftaran Poli</a>
-        <a href="profil_pasien.php"><i class="fas fa-user"></i> Profil Pasien</a>
+        <a href="../pasien/pendaftaran_poli.php"><i class="fas fa-clinic-medical"></i> Pendaftaran Poli</a>
         <a href="logout_pasien.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
     </div>
 
@@ -212,16 +212,17 @@ $dokter_query = "SELECT * FROM dokter3 WHERE id_poli = ?"; // Pastikan dokter me
     </div>
 
     <script>
+        // Handling dynamic doctor selection based on poli selection
         document.getElementById('poli').addEventListener('change', function() {
             var poliId = this.value;
 
-            // Ajax request untuk mendapatkan dokter berdasarkan poli
+            // Ajax request for doctors based on poli
             var xhr = new XMLHttpRequest();
             xhr.open("GET", "get_dokter.php?poli_id=" + poliId, true);
             xhr.onload = function() {
                 if (xhr.status == 200) {
                     var dokterSelect = document.getElementById('dokter');
-                    dokterSelect.innerHTML = '<option value="">Pilih Dokter</option>'; // Reset pilihan dokter
+                    dokterSelect.innerHTML = '<option value="">Pilih Dokter</option>'; // Reset dokter options
 
                     var response = JSON.parse(xhr.responseText);
                     response.forEach(function(dokter) {
@@ -236,16 +237,12 @@ $dokter_query = "SELECT * FROM dokter3 WHERE id_poli = ?"; // Pastikan dokter me
         });
 
         document.getElementById('toggle-button').addEventListener('click', function() {
-    const sidebar = document.querySelector('.sidebar'); // Mengambil sidebar
-    const mainContent = document.querySelector('.main'); // Mengambil konten utama
+            const sidebar = document.querySelector('.sidebar');
+            const mainContent = document.querySelector('.main');
 
-    // Toggle visibility of sidebar
-    sidebar.classList.toggle('hidden'); // Menambahkan/menghapus kelas 'hidden' pada sidebar
-    mainContent.classList.toggle('full'); // Menambahkan/menghapus kelas 'full' pada konten utama
-});
-
-
+            sidebar.classList.toggle('hidden');
+            mainContent.classList.toggle('full');
+        });
     </script>
-
 </body>
 </html>

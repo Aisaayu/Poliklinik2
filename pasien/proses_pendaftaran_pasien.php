@@ -9,10 +9,10 @@ $jenis_kelamin = $_POST['jenis_kelamin'];
 $alamat = $_POST['alamat'];
 $no_hp = $_POST['no_hp'];
 $no_ktp = $_POST['no_ktp'];
-$poli = $_POST['poli'];
-$dokter = $_POST['dokter'];
+$id_poli = $_POST['poli']; // ID poli
+$id_dokter = $_POST['dokter']; // ID dokter
 $tanggal_pendaftaran = $_POST['tanggal_pendaftaran'];
-$waktu_pendaftaran = $_POST['waktu_pendaftaran'];
+$waktu_pendaftaran = $_POST['waktu_pendaftaran']; // Pastikan waktu_pendaftaran ada dalam form
 
 // Periksa apakah pasien dengan No KTP sudah terdaftar
 $query = "SELECT * FROM pasien WHERE no_ktp = ?";
@@ -30,7 +30,7 @@ if ($result->num_rows > 0) {
     // Pasien belum terdaftar, lanjutkan pendaftaran
     // Ambil jumlah pasien yang sudah terdaftar pada bulan dan tahun yang sama
     $year_month = date('Ym', strtotime($tanggal_pendaftaran));
-    $query = "SELECT COUNT(*) AS jumlah_pasien FROM pasien WHERE DATE_FORMAT(tanggal_pendaftaran, '%Y%m') = ?";
+    $query = "SELECT COUNT(*) AS jumlah_pasien FROM pasien WHERE DATE_FORMAT(tanggal_daftar, '%Y%m') = ?";
     $stmt = $conn->prepare($query);
     $stmt->bind_param("s", $year_month);
     $stmt->execute();
@@ -42,10 +42,10 @@ if ($result->num_rows > 0) {
     $no_rm = $year_month . '-' . str_pad($jumlah_pasien, 3, '0', STR_PAD_LEFT);
 
     // Simpan data pasien baru ke database
-    $query = "INSERT INTO pasien (nama, tanggal_lahir, jenis_kelamin, alamat, no_hp, no_ktp, poli, dokter, tanggal_pendaftaran, waktu_pendaftaran, no_rm) 
+    $query = "INSERT INTO pasien (nama, tanggal_lahir, jenis_kelamin, alamat, no_hp, no_ktp, id_poli, id_dokter, tanggal_daftar, waktu_pendaftaran, nomor_rekam_medis) 
               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($query);
-    $stmt->bind_param("sssssssssss", $nama, $tanggal_lahir, $jenis_kelamin, $alamat, $no_hp, $no_ktp, $poli, $dokter, $tanggal_pendaftaran, $waktu_pendaftaran, $no_rm);
+    $stmt->bind_param("sssssssssss", $nama, $tanggal_lahir, $jenis_kelamin, $alamat, $no_hp, $no_ktp, $id_poli, $id_dokter, $tanggal_pendaftaran, $waktu_pendaftaran, $no_rm);
     $stmt->execute();
 
     // Ambil No Antrian berdasarkan ID terakhir
